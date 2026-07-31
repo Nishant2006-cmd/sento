@@ -1,5 +1,5 @@
 flask
 flask-socketio
-eventlet
+eventlet==0.33.0
+gunicorn==21.2.0
 pymongo
-gunicorn
