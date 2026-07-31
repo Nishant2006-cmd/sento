@@ -111,7 +111,8 @@
 
 <!-- Your JS AFTER -->
 <script>
-const socket = io();
+const socket = io("https://sento-4bxk.onrender.com");
+
 socket.on("connect", () => {
     console.log("CONNECTED", socket.id);
 });
