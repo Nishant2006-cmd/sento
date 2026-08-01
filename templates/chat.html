@@ -128,6 +128,14 @@ socket.on("connect_error", (err) => {
 });
 
 
+
+function detectSource(url) {
+  if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
+  if (url.endsWith(".mp4") || url.endsWith(".webm")) return "html5";
+  return "unknown";
+}
+
+
 const roomId = "{{ room }}";
 const username = "{{ username }}";
 
@@ -158,11 +166,64 @@ socket.on("message", function(data){
     `;
 
 });
-socket.on("video_changed", function(data){
 
-    document.getElementById("video-player").src = data.url;
+socket.on("video_changed", function(data) {
+  const type = detectSource(data.url);
 
+  if (type === "youtube") {
+    // Use iframe embed
+    document.getElementById("video-player").outerHTML = `
+      <iframe id="video-player" width="100%" height="500"
+        src="${getEmbedUrl(data.url)}"
+        allowfullscreen></iframe>
+    `;
+    // YouTube IFrame API will sync play/pause
+  } else if (type === "html5") {
+    // Replace iframe with <video>
+    document.getElementById("video-player").outerHTML = `
+      <video id="video-player" width="100%" height="500" controls>
+        <source src="${data.url}" type="video/mp4">
+      </video>
+    `;
+    const video = document.getElementById("video-player");
+    attachHtml5Listeners(video);
+  } else {
+    console.log("Unsupported video type:", data.url);
+  }
 });
+
+
+function attachHtml5Listeners(video) {
+  video.addEventListener("play", () => {
+    socket.emit("video:play", { room: roomId, currentTime: video.currentTime });
+  });
+
+  video.addEventListener("pause", () => {
+    socket.emit("video:pause", { room: roomId, currentTime: video.currentTime });
+  });
+
+  video.addEventListener("seeked", () => {
+    socket.emit("video:seek", { room: roomId, currentTime: video.currentTime });
+  });
+
+  socket.on("video:play", (data) => {
+    video.currentTime = data.currentTime;
+    video.play();
+  });
+
+  socket.on("video:pause", (data) => {
+    video.currentTime = data.currentTime;
+    video.pause();
+  });
+
+  socket.on("video:seek", (data) => {
+    video.currentTime = data.currentTime;
+  });
+}
+
+
+
+
 
 
 function getEmbedUrl(url) {

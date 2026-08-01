@@ -102,7 +102,22 @@ def handle_change_video(data):
         room=data["room"]
     )
 
-    
+
+
+@socketio.on("video:play")
+def handle_play(data):
+    socketio.emit("video:play", data, room=data["room"], include_self=False)
+
+@socketio.on("video:pause")
+def handle_pause(data):
+    socketio.emit("video:pause", data, room=data["room"], include_self=False)
+
+@socketio.on("video:seek")
+def handle_seek(data):
+    socketio.emit("video:seek", data, room=data["room"], include_self=False)
+
+
+
 @socketio.on("send_message")
 def send_message(data):
 
