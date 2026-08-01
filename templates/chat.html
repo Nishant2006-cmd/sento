@@ -100,8 +100,6 @@
     </div>
 
 </div>
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
    <script>
 console.log(typeof io);
@@ -173,12 +171,11 @@ socket.on("video_changed", function(data) {
   const url = data.url;
 
   if (url.includes("youtube.com") || url.includes("youtu.be")) {
-    function onYouTubeIframeAPIReady() {
-  player = new YT.Player("video-player", {
-    events: { 'onStateChange': onPlayerStateChange }
-  });
-}
-
+    document.getElementById("video-player").outerHTML = `
+      <iframe id="video-player" width="100%" height="500"
+        src="${getEmbedUrl(url)}"
+        allowfullscreen></iframe>
+    `;
     // YouTube IFrame API handles sync
   } else if (url.endsWith(".mp4") || url.endsWith(".webm")) {
     document.getElementById("video-player").outerHTML = `
@@ -193,50 +190,6 @@ socket.on("video_changed", function(data) {
   }
 });
 
-
-
-function onPlayerStateChange(event) {
-  const currentTime = player.getCurrentTime();
-  if (event.data === YT.PlayerState.PLAYING) {
-    socket.emit("video:play", { room: roomId, currentTime });
-  }
-  if (event.data === YT.PlayerState.PAUSED) {
-    socket.emit("video:pause", { room: roomId, currentTime });
-  }
-}
-
-socket.on("video:play", (data) => {
-  player.seekTo(data.currentTime, true);
-  player.playVideo();
-});
-
-socket.on("video:pause", (data) => {
-  player.seekTo(data.currentTime, true);
-  player.pauseVideo();
-});
-
-socket.on("video:seek", (data) => {
-  player.seekTo(data.currentTime, true);
-});
-
-
-
-
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player("video-player", {
-    events: { 'onStateChange': onPlayerStateChange }
-  });
-}
-
-function onPlayerStateChange(event) {
-  const currentTime = player.getCurrentTime();
-  if (event.data === YT.PlayerState.PLAYING) {
-    socket.emit("video:play", { room: roomId, currentTime });
-  }
-  if (event.data === YT.PlayerState.PAUSED) {
-    socket.emit("video:pause", { room: roomId, currentTime });
-  }
-}
 
 
 function attachHtml5Listeners(video) {
