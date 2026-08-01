@@ -88,6 +88,21 @@ def handle_join(data):
         room=data["room"]
     )
 
+
+
+
+@socketio.on("change_video")
+def handle_change_video(data):
+
+    socketio.emit(
+        "video_changed",
+        {
+            "url": data["url"]
+        },
+        room=data["room"]
+    )
+
+    
 @socketio.on("send_message")
 def send_message(data):
 

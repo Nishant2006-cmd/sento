@@ -158,6 +158,38 @@ socket.on("message", function(data){
     `;
 
 });
+socket.on("video_changed", function(data){
+
+    document.getElementById("video-player").src = data.url;
+
+});
+
+
+function getEmbedUrl(url) {
+
+    if (url.includes("watch?v=")) {
+        return url.replace("watch?v=", "embed/");
+    }
+
+    if (url.includes("youtu.be/")) {
+        let id = url.split("youtu.be/")[1];
+        return "https://www.youtube.com/embed/" + id;
+    }
+
+    return url;
+}
+
+
+document.getElementById("change-video").onclick = function () {
+
+    let url = document.getElementById("video-link").value;
+
+    socket.emit("change_video", {
+        room: roomId,
+        url: getEmbedUrl(url)
+    });
+
+};
 
 
 document.getElementById("send").onclick = function(){
